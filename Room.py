@@ -2,7 +2,8 @@ from Database import Database
 
 
 class Room:
-    def __init__(self, room_id, room_type, hotel_id, room_number, capacity, rating, price_USD,room_status):
+    def __init__(self, db, room_id, room_type, hotel_id, room_number, capacity, rating, price_USD,room_status):
+        self.db = db
         self.__room_id = room_id
         self.room_type = room_type
         self.hotel_id = hotel_id
@@ -16,7 +17,6 @@ class Room:
     def price_USD(self):
         return self.__price_USD
 
-
     @price_USD.setter
     def price_USD(self, value):
         if value < 0:
@@ -29,7 +29,7 @@ class Room:
         return self.__room_id
     
     def get_bookings(self):
-        response = db.client.table("bookings").select("*").eq("room_id", self.room_id).execute()
+        response = self.db.client.table("bookings").select("*").eq("room_id", self.room_id).execute()
         bookings = response.data
         return bookings
 
@@ -43,7 +43,7 @@ class Room:
             "payment_method": payment_method,
             "status": status 
         }
-        db.client.table("bookings").insert(params).execute() 
+        self.db.client.table("bookings").insert(params).execute() 
 
 
 if __name__ == "__main__":  
