@@ -1,6 +1,5 @@
 from Database import Database
 
-
 class Room:
     def __init__(self, db, room_id, room_type, hotel_id, room_number, capacity, rating, price_USD,room_status):
         self.db = db
@@ -46,10 +45,49 @@ class Room:
         self.db.client.table("bookings").insert(params).execute() 
 
 
+
+class SuiteRoom(Room):
+    def __init__(self, db, room_id, room_type, hotel_id, room_number, capacity, rating, price_USD,room_status):
+        super().__init__(db, room_id, room_type, hotel_id, room_number, capacity, rating, price_USD,room_status)
+        self.__hasPool = True
+        self.minibar = {
+            "snacks": ["chips", "nuts", "chocolates"],
+            "drinks": ["soda", "water", "beer"]
+        }
+
+    @property
+    def hasPool(self):
+        return self.__hasPool
+
+    def get_minibar(self):
+        return self.minibar
+    
+    def clean_pool(self):
+        print("Cleaning the pool")
+        
+
+def load_rooms(db, data):
+    rooms = []
+    for room in data:
+        if "suite" in room["room_type"].lower():
+            room_obj = SuiteRoom(db, **room)
+        else:
+            room_obj = Room(db, **room)
+        rooms.append(room_obj)
+    return rooms
+
+
 if __name__ == "__main__":  
     db = Database()
     response = db.client.table("hotel_rooms").select("*").execute()
     hotel_rooms = response.data
+    
+    rooms = load_rooms(db, hotel_rooms)
 
-    room_obj = Room(**hotel_rooms[0]) ## creates a Room object from the first room in the database
+    for room in rooms:
+        if isinstance(room, SuiteRoom):
+            print(f"Room {room.room_number}({room.room_type}):")
+            room.clean_pool()
+            # print(room.get_minibar())
+
     
